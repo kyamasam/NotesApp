@@ -2,8 +2,18 @@
 import { ArrowDown, ArrowUp, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
+interface LeaderboardUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  full_name: string;
+  user: any;
+  note_count: number;
+}
+
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -108,11 +118,11 @@ export default function LeaderboardPage() {
                             <User className="w-4 h-4 text-blue-600" />
                           </div>
                         )}
-                        <span className="text-gray-900">{user.full_name}</span>
+                        <span className="text-gray-900">{user?.full_name}</span>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-gray-900">
-                      {user.note_count}
+                      {user?.note_count}
                     </td>
                     <td className="py-4 px-6">
                       <span className="text-green-600 text-sm">

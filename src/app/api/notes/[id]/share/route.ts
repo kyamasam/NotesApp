@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateNote, fetchUserByEmail, generatePublicId } from "../../../../lib/data";
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -13,7 +13,8 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const noteId = params.id;
+    const { id } = await params;
+    const noteId = id;
     const publicId = generatePublicId();
 
     const note = await updateNote(noteId, {
@@ -38,8 +39,8 @@ export async function POST(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -48,11 +49,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const noteId = params.id;
+    const { id } = await params;
+    const noteId = id;
 
     const note = await updateNote(noteId, {
       is_public: false,
-      public_id: null
+      public_id: undefined
     });
 
     return NextResponse.json({ note });

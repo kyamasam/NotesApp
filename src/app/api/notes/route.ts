@@ -6,12 +6,16 @@ export async function GET() {
   try {
     const session = await getServerSession();
 
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    
     const user = await fetchUserByEmail(session.user.email);
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const notes = await fetchNotes(user.id);
 
     return NextResponse.json({ notes });
@@ -34,12 +38,12 @@ export async function POST(request: NextRequest) {
 
     const { title, content } = await request.json();
     const user = await fetchUserByEmail(session.user.email!);
-    const userId = user.id;
+    const userId = user?.id;
 
     const note = await createNote({
       title: title || "Untitled Note",
       content: content || "",
-      userId,
+      userId: userId || null,
     });
 
     return NextResponse.json({ note }, { status: 201 });

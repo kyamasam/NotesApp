@@ -107,7 +107,7 @@ export async function fetchNotes(user_id: string): Promise<Note[]> {
 export async function createNote(noteData: {
   title: string;
   content: string;
-  userId: string;
+  userId: string|null;
 }): Promise<Note> {
   try {
     const [note] = await sql<Note[]>`

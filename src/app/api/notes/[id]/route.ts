@@ -4,7 +4,7 @@ import { deleteNote, updateNote, fetchUserByEmail } from "../../../lib/data";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -12,10 +12,11 @@ export async function PUT(
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-  
+
 
     const { title, content } = await request.json();
-    const noteId = params.id;
+    const { id } = await params;
+    const noteId = id;
 
     const note = await updateNote(noteId, { title, content });
 
@@ -30,8 +31,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -40,8 +41,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const noteId = params.id;
+    const { id } = await params;
+    const noteId = id;
     const user = await fetchUserByEmail(session.user.email!);
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const userId = user.id;
 
     await deleteNote(noteId, userId);

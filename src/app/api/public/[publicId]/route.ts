@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchPublicNote } from "../../../lib/data";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { publicId: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ publicId: string }> }
 ) {
   try {
-    const publicId = params.publicId;
+    const { publicId } = await params;
     const note = await fetchPublicNote(publicId);
 
     if (!note) {

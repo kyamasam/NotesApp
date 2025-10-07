@@ -36,7 +36,7 @@ const handler = NextAuth({
 
             if (shouldUpdateAvatar) {
               dbUser = await updateUser(dbUser.id, {
-                avatar_url: user.image,
+                avatar_url: user.image || undefined,
               });
             }
           }
@@ -54,7 +54,7 @@ const handler = NextAuth({
     },
     async session({ session, token }) {
       if (session?.user) {
-        session.user.id = token.userId || token.sub; // prefer userId if available
+        (session.user as any).id = token.userId || token.sub; // prefer userId if available
         session.user.email = token.email;
       }
       return session;
