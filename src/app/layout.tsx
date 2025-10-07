@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 const virgil = localFont({
-  src: "/fonts/Virgil.woff2",
+  src: "./fonts/Virgil.woff2",
   variable: "--font-virgil",
 });
 
