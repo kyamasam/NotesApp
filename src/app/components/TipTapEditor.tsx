@@ -11,8 +11,9 @@ import {
   Redo,
   Strikethrough,
   Undo,
+  Type,
 } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface TipTapEditorProps {
   content: string;
@@ -25,6 +26,7 @@ export default function TipTapEditor({
   onChange,
   placeholder = "Start writing...",
 }: TipTapEditorProps) {
+  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -43,6 +45,7 @@ export default function TipTapEditor({
       attributes: {
         class:
           "prose prose-sm sm:prose-base lg:prose-lg max-w-none focus:outline-none min-h-[500px] p-6",
+        style: "font-family: var(--font-virgil)",
       },
     },
   });
@@ -57,7 +60,7 @@ export default function TipTapEditor({
   // Detect if user is on Mac
   const isMac =
     typeof navigator !== "undefined" &&
-    navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+    navigator.userAgent.toUpperCase().indexOf("MAC") >= 0;
   const mod = isMac ? "⌘" : "Ctrl";
 
   const toggleBold = useCallback(() => {
@@ -91,6 +94,14 @@ export default function TipTapEditor({
   const redo = useCallback(() => {
     editor?.chain().focus().redo().run();
   }, [editor]);
+
+  const getFontSizeClass = (size: 'small' | 'medium' | 'large') => {
+    switch (size) {
+      case 'small': return 'text-sm';
+      case 'medium': return 'text-base';
+      case 'large': return 'text-lg';
+    }
+  };
 
   if (!editor) {
     return (
@@ -180,6 +191,26 @@ export default function TipTapEditor({
         >
           <Quote className="w-5 h-5 text-gray-800" />
         </button>
+
+        <div className="w-px h-6 bg-gray-300 mx-2" />
+
+        <div className="relative">
+          <button
+            className="p-2 rounded hover:bg-gray-100 transition-colors"
+            title="Font Size"
+          >
+            <Type className="w-5 h-5 text-gray-800" />
+          </button>
+          <select
+            value={fontSize}
+            onChange={(e) => setFontSize(e.target.value as 'small' | 'medium' | 'large')}
+            className="absolute left-0 top-10 bg-white border border-gray-300 rounded px-2 py-1 text-sm shadow-lg z-10"
+          >
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
       </div>
 
       {/* Editor */}
@@ -238,7 +269,7 @@ export default function TipTapEditor({
             outline: none;
           }
         `}</style>
-        <EditorContent editor={editor} className="h-full" />
+        <EditorContent editor={editor} className={`h-full ${getFontSizeClass(fontSize)}`} />
       </div>
     </div>
   );
