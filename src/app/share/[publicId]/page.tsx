@@ -1,48 +1,48 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import { ExternalLink, Clock, User } from 'lucide-react'
-import type { Note } from '../../lib/definitions'
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { Clock, ExternalLink, User } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { Note } from "../../lib/definitions";
 
-dayjs.extend(relativeTime)
+dayjs.extend(relativeTime);
 
 interface PublicNote extends Note {
-  author_name: string
+  author_name: string;
 }
 
 export default function PublicNotePage() {
-  const params = useParams()
-  const publicId = params.publicId as string
-  const [note, setNote] = useState<PublicNote | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams();
+  const publicId = params.publicId as string;
+  const [note, setNote] = useState<PublicNote | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNote = async () => {
       try {
-        const response = await fetch(`/api/public/${publicId}`)
+        const response = await fetch(`/api/public/${publicId}`);
         if (response.ok) {
-          const data = await response.json()
-          setNote(data.note)
+          const data = await response.json();
+          setNote(data.note);
         } else if (response.status === 404) {
-          setError('Note not found or no longer public')
+          setError("Note not found or no longer public");
         } else {
-          setError('Failed to load note')
+          setError("Failed to load note");
         }
       } catch (err) {
-        setError('Failed to load note')
+        setError("Failed to load note");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (publicId) {
-      fetchNote()
+      fetchNote();
     }
-  }, [publicId])
+  }, [publicId]);
 
   if (loading) {
     return (
@@ -52,7 +52,7 @@ export default function PublicNotePage() {
           <p className="text-gray-600">Loading note...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !note) {
@@ -60,9 +60,12 @@ export default function PublicNotePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="text-6xl mb-4">🔍</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Note Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Note Not Found
+          </h1>
           <p className="text-gray-600 mb-6">
-            {error || "This note doesn't exist or is no longer publicly shared."}
+            {error ||
+              "This note doesn't exist or is no longer publicly shared."}
           </p>
           <a
             href="/"
@@ -73,7 +76,7 @@ export default function PublicNotePage() {
           </a>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -87,7 +90,9 @@ export default function PublicNotePage() {
                 <span className="text-white font-bold text-sm">📝</span>
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Public Note</h1>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  Public Note
+                </h1>
                 <p className="text-sm text-gray-500">Read-only view</p>
               </div>
             </div>
@@ -108,7 +113,7 @@ export default function PublicNotePage() {
           {/* Note Header */}
           <div className="px-8 py-6 border-b border-gray-200">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {note.title || 'Untitled Note'}
+              {note.title || "Untitled Note"}
             </h1>
             <div className="flex items-center gap-6 text-sm text-gray-600">
               <div className="flex items-center gap-2">
@@ -118,7 +123,10 @@ export default function PublicNotePage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 <span>
-                  Created {note.created_at ? dayjs(note.created_at).fromNow() : 'recently'}
+                  Created{" "}
+                  {note.created_at
+                    ? dayjs(note.created_at).fromNow()
+                    : "recently"}
                 </span>
               </div>
             </div>
@@ -127,9 +135,11 @@ export default function PublicNotePage() {
           {/* Note Content */}
           <div className="px-8 py-6">
             <div
-              className="prose prose-gray max-w-none"
+              className="prose text-gray-800 max-w-none"
               dangerouslySetInnerHTML={{
-                __html: note.content || '<p class="text-gray-500 italic">This note is empty.</p>'
+                __html:
+                  note.content ||
+                  '<p class="text-gray-500 italic">This note is empty.</p>',
               }}
             />
           </div>
@@ -150,5 +160,5 @@ export default function PublicNotePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
