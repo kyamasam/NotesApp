@@ -127,24 +127,23 @@ export async function updateNote(
   updates: { title?: string; content?: string; is_public?: boolean; public_id?: string }
 ): Promise<Note> {
   try {
-    let query;
     const fields = [];
     const values = [];
 
     if (updates.title !== undefined) {
-      fields.push('title = $' + (fields.length + 1));
+      fields.push('title = $' + (values.length + 1));
       values.push(updates.title);
     }
     if (updates.content !== undefined) {
-      fields.push('content = $' + (fields.length + 1));
+      fields.push('content = $' + (values.length + 1));
       values.push(updates.content);
     }
     if (updates.is_public !== undefined) {
-      fields.push('is_public = $' + (fields.length + 1));
+      fields.push('is_public = $' + (values.length + 1));
       values.push(updates.is_public);
     }
     if (updates.public_id !== undefined) {
-      fields.push('public_id = $' + (fields.length + 1));
+      fields.push('public_id = $' + (values.length + 1));
       values.push(updates.public_id);
     }
 
@@ -153,15 +152,14 @@ export async function updateNote(
     }
 
     fields.push('updated_at = NOW()');
+    values.push(noteId);
 
     const queryString = `
       UPDATE notes
       SET ${fields.join(', ')}
-      WHERE id = $${fields.length + 1}
+      WHERE id = $${values.length}
       RETURNING *
     `;
-
-    values.push(noteId);
 
     const result = await sql.unsafe(queryString, values) as Note[];
     const [note] = result;
