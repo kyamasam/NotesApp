@@ -1,72 +1,88 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { X, Copy, Check, ExternalLink, Eye, EyeOff, Share2 } from 'lucide-react'
-import type { Note } from '../lib/definitions'
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Share2,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import type { Note } from "../lib/definitions";
 
 interface SharePopupProps {
-  note: Note
-  isOpen: boolean
-  onClose: () => void
-  onShare: (noteId: string) => Promise<{ publicUrl: string; publicId: string }>
-  onUnshare: (noteId: string) => Promise<void>
+  note: Note;
+  isOpen: boolean;
+  onClose: () => void;
+  onShare: (noteId: string) => Promise<{ publicUrl: string; publicId: string }>;
+  onUnshare: (noteId: string) => Promise<void>;
 }
 
-export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }: SharePopupProps) {
-  const [publicUrl, setPublicUrl] = useState<string>('')
-  const [loading, setLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [error, setError] = useState<string>('')
+export default function SharePopup({
+  note,
+  isOpen,
+  onClose,
+  onShare,
+  onUnshare,
+}: SharePopupProps) {
+  const [publicUrl, setPublicUrl] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const isShared = note.is_public && note.public_id
-  const currentPublicUrl = isShared ? `${window.location.origin}/share/${note.public_id}` : ''
+  const isShared = note.is_public && note.public_id;
+  const currentPublicUrl = isShared
+    ? `${window.location.origin}/share/${note.public_id}`
+    : "";
 
   const handleShare = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
     try {
-      const result = await onShare(note.id)
-      setPublicUrl(result.publicUrl)
+      const result = await onShare(note.id);
+      setPublicUrl(result.publicUrl);
     } catch (error) {
-      setError('Failed to share note. Please try again.')
+      setError("Failed to share note. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleUnshare = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
     try {
-      await onUnshare(note.id)
-      setPublicUrl('')
+      await onUnshare(note.id);
+      setPublicUrl("");
     } catch (error) {
-      setError('Failed to unshare note. Please try again.')
+      setError("Failed to unshare note. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCopy = async () => {
-    const urlToCopy = publicUrl || currentPublicUrl
+    const urlToCopy = publicUrl || currentPublicUrl;
     try {
-      await navigator.clipboard.writeText(urlToCopy)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(urlToCopy);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error)
+      console.error("Failed to copy:", error);
     }
-  }
+  };
 
   const handleOpenLink = () => {
-    const urlToOpen = publicUrl || currentPublicUrl
-    window.open(urlToOpen, '_blank')
-  }
+    const urlToOpen = publicUrl || currentPublicUrl;
+    window.open(urlToOpen, "_blank");
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -75,8 +91,12 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
               <Share2 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Share Note</h2>
-              <p className="text-sm text-gray-500">Make this note publicly viewable</p>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Share Note
+              </h2>
+              <p className="text-sm text-gray-500">
+                Make this note publicly viewable
+              </p>
             </div>
           </div>
           <button
@@ -90,12 +110,16 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
         {/* Content */}
         <div className="p-6">
           <div className="mb-6">
-            <h3 className="font-medium text-gray-900 mb-2">{note.title || 'Untitled Note'}</h3>
+            <h3 className="font-medium text-gray-900 mb-2">
+              {note.title || "Untitled Note"}
+            </h3>
             <div className="text-sm text-gray-600 flex items-center gap-2">
               {isShared || publicUrl ? (
                 <>
                   <Eye className="w-4 h-4 text-green-600" />
-                  <span className="text-green-600">Public - Anyone with the link can view</span>
+                  <span className="text-green-600">
+                    Public - Anyone with the link can view
+                  </span>
                 </>
               ) : (
                 <>
@@ -144,7 +168,9 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
                 </button>
               </div>
               {copied && (
-                <p className="text-sm text-green-600 mt-1">Link copied to clipboard!</p>
+                <p className="text-sm text-green-600 mt-1">
+                  Link copied to clipboard!
+                </p>
               )}
             </div>
           )}
@@ -157,7 +183,7 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
                 disabled={loading}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Removing...' : 'Make Private'}
+                {loading ? "Removing..." : "Make Private"}
               </button>
             ) : (
               <button
@@ -165,7 +191,7 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
                 disabled={loading}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Creating link...' : 'Create Public Link'}
+                {loading ? "Creating link..." : "Create Public Link"}
               </button>
             )}
             <button
@@ -196,5 +222,5 @@ export default function SharePopup({ note, isOpen, onClose, onShare, onUnshare }
         </div>
       </div>
     </div>
-  )
+  );
 }
