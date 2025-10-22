@@ -1,20 +1,26 @@
 "use client";
 
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import Highlight from "@tiptap/extension-highlight";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { createLowlight } from "lowlight";
 import {
   Bold,
+  ChevronDown,
+  Code,
+  Highlighter,
   Italic,
   List,
   ListOrdered,
+  Minus,
+  Plus,
   Quote,
   Redo,
   Strikethrough,
   Undo,
-  Plus,
-  Minus,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface TipTapEditorProps {
   content: string;
@@ -28,11 +34,29 @@ export default function TipTapEditor({
   placeholder = "Start writing...",
 }: TipTapEditorProps) {
   const [fontSize, setFontSize] = useState<number>(14);
+  const [showHighlightColors, setShowHighlightColors] = useState(false);
+  const [showActionPalette, setShowActionPalette] = useState(false);
+  const [palettePosition, setPalettePosition] = useState({ x: 0, y: 0 });
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const paletteRef = useRef<HTMLDivElement>(null);
+  const lowlight = createLowlight();
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
+        },
+        codeBlock: false, // Disable default code block to use lowlight version
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+        defaultLanguage: "plaintext",
+        HTMLAttributes: {
+          class: "code-block",
         },
       }),
     ],
@@ -57,6 +81,69 @@ export default function TipTapEditor({
       editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [editor, content]);
+
+  // Close highlight color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        highlightRef.current &&
+        !highlightRef.current.contains(event.target as Node)
+      ) {
+        setShowHighlightColors(false);
+      }
+      if (
+        paletteRef.current &&
+        !paletteRef.current.contains(event.target as Node)
+      ) {
+        setShowActionPalette(false);
+      }
+    };
+
+    if (showHighlightColors || showActionPalette) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showHighlightColors, showActionPalette]);
+
+  // Handle text selection for action palette
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      if (!editor) return;
+
+      const { from, to, empty } = editor.state.selection;
+
+      if (empty) {
+        setShowActionPalette(false);
+        return;
+      }
+
+      // Get the DOM selection to calculate position
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        setPalettePosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top - 50, // Position above the selection
+        });
+        setShowActionPalette(true);
+      }
+    };
+
+    if (editor) {
+      editor.on("selectionUpdate", handleSelectionChange);
+    }
+
+    return () => {
+      if (editor) {
+        editor.off("selectionUpdate", handleSelectionChange);
+      }
+    };
+  }, [editor]);
 
   // Detect if user is on Mac
   const isMac =
@@ -88,6 +175,10 @@ export default function TipTapEditor({
     editor?.chain().focus().toggleBlockquote().run();
   }, [editor]);
 
+  const toggleCodeBlock = useCallback(() => {
+    editor?.chain().focus().toggleCodeBlock().run();
+  }, [editor]);
+
   const undo = useCallback(() => {
     editor?.chain().focus().undo().run();
   }, [editor]);
@@ -97,6 +188,15 @@ export default function TipTapEditor({
   }, [editor]);
 
   const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
+
+  const highlightColors = [
+    { name: "Yellow", color: "#fff59d" },
+    { name: "Green", color: "#c8e6c9" },
+    { name: "Blue", color: "#bbdefb" },
+    { name: "Pink", color: "#f8bbd9" },
+    { name: "Orange", color: "#ffcc80" },
+    { name: "Purple", color: "#e1bee7" },
+  ];
 
   const increaseFontSize = useCallback(() => {
     const currentIndex = fontSizes.indexOf(fontSize);
@@ -111,6 +211,55 @@ export default function TipTapEditor({
       setFontSize(fontSizes[currentIndex - 1]);
     }
   }, [fontSize, fontSizes]);
+
+  const toggleHighlight = useCallback(
+    (color?: string) => {
+      if (!editor) return;
+
+      if (color) {
+        editor.chain().focus().toggleHighlight({ color }).run();
+      } else {
+        editor.chain().focus().toggleHighlight().run();
+      }
+      setShowHighlightColors(false);
+    },
+    [editor]
+  );
+
+  const removeHighlight = useCallback(() => {
+    editor?.chain().focus().unsetHighlight().run();
+    setShowHighlightColors(false);
+  }, [editor]);
+
+  const applyHighlightFromPalette = useCallback(
+    (color: string) => {
+      if (!editor) return;
+
+      // First ensure we maintain the selection
+      const { from, to } = editor.state.selection;
+
+      // Apply highlight with color
+      editor
+        .chain()
+        .setTextSelection({ from, to })
+        .toggleHighlight({ color })
+        .run();
+
+      setShowHighlightColors(false);
+      setShowActionPalette(false);
+    },
+    [editor]
+  );
+
+  const removeHighlightFromPalette = useCallback(() => {
+    if (!editor) return;
+
+    const { from, to } = editor.state.selection;
+    editor.chain().setTextSelection({ from, to }).unsetHighlight().run();
+
+    setShowHighlightColors(false);
+    setShowActionPalette(false);
+  }, [editor]);
 
   if (!editor) {
     return (
@@ -171,6 +320,43 @@ export default function TipTapEditor({
           <Strikethrough className="w-5 h-5 text-gray-800" />
         </button>
 
+        <div className="relative" ref={highlightRef}>
+          <button
+            onClick={() => setShowHighlightColors(!showHighlightColors)}
+            className={`p-2 rounded hover:bg-gray-100 transition-colors flex items-center ${
+              editor.isActive("highlight") ? "bg-blue-100" : ""
+            }`}
+            title="Highlight Text"
+          >
+            <Highlighter className="w-5 h-5 text-gray-800" />
+            <ChevronDown className="w-3 h-3 text-gray-800 ml-1" />
+          </button>
+
+          {showHighlightColors && (
+            <div className="absolute top-10 left-0 bg-white border border-gray-300 rounded shadow-lg z-10 p-2">
+              <div className="grid grid-cols-3 gap-2 min-w-[120px]">
+                {highlightColors.map((highlight) => (
+                  <button
+                    key={highlight.name}
+                    onClick={() => toggleHighlight(highlight.color)}
+                    className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: highlight.color }}
+                    title={`Highlight ${highlight.name}`}
+                  />
+                ))}
+              </div>
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <button
+                  onClick={removeHighlight}
+                  className="text-xs px-2 py-1 hover:bg-gray-100 rounded w-full text-gray-700"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="w-px h-6 bg-gray-300 mx-2" />
 
         <button
@@ -199,6 +385,15 @@ export default function TipTapEditor({
           title={`Quote (${mod}+Shift+B)`}
         >
           <Quote className="w-5 h-5 text-gray-800" />
+        </button>
+        <button
+          onClick={toggleCodeBlock}
+          className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+            editor.isActive("codeBlock") ? "bg-blue-100" : ""
+          }`}
+          title="Code Block"
+        >
+          <Code className="w-5 h-5 text-gray-800" />
         </button>
 
         <div className="w-px h-6 bg-gray-300 mx-2" />
@@ -279,6 +474,51 @@ export default function TipTapEditor({
           .ProseMirror:focus {
             outline: none;
           }
+          .ProseMirror pre {
+            background: #282a39;
+            color: #d4d4d4;
+            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+            // padding: 0.75rem 1rem;
+            // border-radius: 0.5rem;
+            overflow-x: auto;
+            // margin: 1rem 0;
+            // border: 1px solid #333;
+            line-height: 1.4;
+          }
+          .ProseMirror pre code {
+            color: inherit;
+            padding: 0;
+            background: none;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            display: block;
+            white-space: pre;
+          }
+          .ProseMirror pre.code-block {
+            counter-reset: none;
+          }
+          .ProseMirror pre.code-block * {
+            list-style: none !important;
+          }
+          .ProseMirror pre.code-block p {
+            display: inline !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .ProseMirror pre.code-block br {
+            display: none !important;
+          }
+          .ProseMirror .hljs {
+            background: transparent !important;
+          }
+          .ProseMirror code {
+            background: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #dc2626;
+          }
         `}</style>
         <EditorContent
           editor={editor}
@@ -286,6 +526,75 @@ export default function TipTapEditor({
           style={{ fontSize: `${fontSize}px` }}
         />
       </div>
+
+      {/* Action Palette */}
+      {showActionPalette && (
+        <div
+          ref={paletteRef}
+          className="fixed bg-white border border-gray-300 rounded shadow-lg z-50 p-1 flex gap-1"
+          style={{
+            left: `${palettePosition.x}px`,
+            top: `${palettePosition.y}px`,
+            transform: "translateX(-50%)",
+          }}
+        >
+          <button
+            onClick={toggleBold}
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive("bold") ? "bg-blue-100" : ""
+            }`}
+            title="Bold"
+          >
+            <Bold className="w-4 h-4 text-gray-800" />
+          </button>
+
+          <button
+            onClick={toggleStrike}
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive("strike") ? "bg-blue-100" : ""
+            }`}
+            title="Strikethrough"
+          >
+            <Strikethrough className="w-4 h-4 text-gray-800" />
+          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowHighlightColors(!showHighlightColors)}
+              className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                editor.isActive("highlight") ? "bg-blue-100" : ""
+              }`}
+              title="Highlight"
+            >
+              <Highlighter className="w-4 h-4 text-gray-800" />
+            </button>
+
+            {showHighlightColors && (
+              <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-white border border-gray-300 rounded shadow-lg z-[60] p-2">
+                <div className="grid grid-cols-3 gap-2 min-w-[120px]">
+                  {highlightColors.map((highlight) => (
+                    <button
+                      key={highlight.name}
+                      onClick={() => applyHighlightFromPalette(highlight.color)}
+                      className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: highlight.color }}
+                      title={`Highlight ${highlight.name}`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <button
+                    onClick={removeHighlightFromPalette}
+                    className="text-xs px-2 py-1 hover:bg-gray-100 rounded w-full text-gray-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
