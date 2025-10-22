@@ -11,7 +11,8 @@ import {
   Redo,
   Strikethrough,
   Undo,
-  Type,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -26,7 +27,7 @@ export default function TipTapEditor({
   onChange,
   placeholder = "Start writing...",
 }: TipTapEditorProps) {
-  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [fontSize, setFontSize] = useState<number>(14);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -95,13 +96,21 @@ export default function TipTapEditor({
     editor?.chain().focus().redo().run();
   }, [editor]);
 
-  const getFontSizeClass = (size: 'small' | 'medium' | 'large') => {
-    switch (size) {
-      case 'small': return 'text-sm';
-      case 'medium': return 'text-base';
-      case 'large': return 'text-lg';
+  const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
+
+  const increaseFontSize = useCallback(() => {
+    const currentIndex = fontSizes.indexOf(fontSize);
+    if (currentIndex < fontSizes.length - 1) {
+      setFontSize(fontSizes[currentIndex + 1]);
     }
-  };
+  }, [fontSize, fontSizes]);
+
+  const decreaseFontSize = useCallback(() => {
+    const currentIndex = fontSizes.indexOf(fontSize);
+    if (currentIndex > 0) {
+      setFontSize(fontSizes[currentIndex - 1]);
+    }
+  }, [fontSize, fontSizes]);
 
   if (!editor) {
     return (
@@ -194,23 +203,25 @@ export default function TipTapEditor({
 
         <div className="w-px h-6 bg-gray-300 mx-2" />
 
-        <div className="relative">
-          <button
-            className="p-2 rounded hover:bg-gray-100 transition-colors"
-            title="Font Size"
-          >
-            <Type className="w-5 h-5 text-gray-800" />
-          </button>
-          <select
-            value={fontSize}
-            onChange={(e) => setFontSize(e.target.value as 'small' | 'medium' | 'large')}
-            className="absolute left-0 top-10 bg-white border border-gray-300 rounded px-2 py-1 text-sm shadow-lg z-10"
-          >
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-          </select>
-        </div>
+        <button
+          onClick={decreaseFontSize}
+          disabled={fontSizes.indexOf(fontSize) === 0}
+          className="p-2 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          title="Decrease Font Size"
+        >
+          <Minus className="w-5 h-5 text-gray-800" />
+        </button>
+        <span className="px-2 text-sm text-gray-600 min-w-[40px] text-center font-mono">
+          {fontSize}
+        </span>
+        <button
+          onClick={increaseFontSize}
+          disabled={fontSizes.indexOf(fontSize) === fontSizes.length - 1}
+          className="p-2 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          title="Increase Font Size"
+        >
+          <Plus className="w-5 h-5 text-gray-800" />
+        </button>
       </div>
 
       {/* Editor */}
@@ -269,7 +280,11 @@ export default function TipTapEditor({
             outline: none;
           }
         `}</style>
-        <EditorContent editor={editor} className={`h-full ${getFontSizeClass(fontSize)}`} />
+        <EditorContent
+          editor={editor}
+          className="h-full"
+          style={{ fontSize: `${fontSize}px` }}
+        />
       </div>
     </div>
   );
