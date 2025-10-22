@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import AuthProvider from "./providers/SessionProvider";
-
+<link rel="icon" href="/favicon.ico" sizes="any" />;
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -21,7 +21,8 @@ const virgil = localFont({
 
 export const metadata: Metadata = {
   title: "Notes App",
-  description: "Create, edit, and organize your notes with a beautiful WYSIWYG editor",
+  description:
+    "Create, edit, and organize your notes with a beautiful WYSIWYG editor",
 };
 
 export default function RootLayout({
