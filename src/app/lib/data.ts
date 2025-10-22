@@ -2,7 +2,7 @@ import postgres from "postgres";
 
 import { Note, User } from "./definitions";
 const sql = postgres(process.env.POSTGRES_URL!, {
-  ssl: process.env.NODE_ENV === "production" ? "require" : false,
+  ssl: false,
   max: 1,
   idle_timeout: 20,
   connect_timeout: 10,
