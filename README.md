@@ -1,9 +1,16 @@
 # Andika - A note taking app
 
-# Option 1: Run With Docker 
+Screenshots
+You can access the app at 
+[Link](https://notes.fastduka.co.ke)
+
+![Home](scr/screenshots/image.png)
+
+# Option 1: Run With Docker
+
 ## create a .env file
 
-Prefill the values 
+Prefill the values
 
 ```sh
 NEXTAUTH_URL=localhost:8000
@@ -18,10 +25,7 @@ POSTGRES_DB=notes_app
 POSTGRES_PORT=5432
 ```
 
-to generate the google auth credentials (visit)['https://console.cloud.google.com/auth/'] 
-
-
-
+to generate the google auth credentials (visit)['https://console.cloud.google.com/auth/']
 
 ```sh
 docker compose up --build -d
@@ -40,28 +44,21 @@ docker exec -it notes-app-postgres-1 psql -U postgres -d notes_app
 
 paste the sql inside database-schema.sql and hit enter
 
-exit the sql command line with ```\q``` and exit the container shell with ```exit```
+exit the sql command line with `\q` and exit the container shell with `exit`
 
-
-
-# Option 2: Run With npm 
+# Option 2: Run With npm
 
 Create a .env file and prefill the values
 
 Install deps
+
 ```sh
 npm install
 
 ```
-Run the project 
+
+Run the project
+
 ```sh
-npm run dev 
+npm run dev
 ```
-
-
-
-
-
-
-
-
