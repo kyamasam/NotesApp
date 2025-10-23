@@ -1,10 +1,10 @@
 # Andika - A note taking app
 
 Screenshots
-You can access the app at 
+You can access the app at
 [Link](https://notes.fastduka.co.ke)
 
-![Home](scr/screenshots/image.png)
+![Home](<[scr/screenshots/image.png](https://raw.githubusercontent.com/kyamasam/NotesApp/refs/heads/main/src/screenshots/image.png)>)
 
 # Option 1: Run With Docker
 
