@@ -27,7 +27,7 @@ POSTGRES_DB=notes_app
 POSTGRES_PORT=5432
 ```
 
-to generate the google auth credentials (visit)['https://console.cloud.google.com/auth/']
+to generate the google auth credentials [visit](https://console.cloud.google.com/auth/)
 
 ```sh
 docker compose up --build -d
