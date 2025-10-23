@@ -4,7 +4,7 @@ Screenshots
 You can access the app at
 [Link](https://notes.fastduka.co.ke)
 
-![Home](https://raw.githubusercontent.com/kyamasam/NotesApp/refs/heads/main/src/screenshots/image.png)
+
 ![Screenshot](./src/screenshots/image.png)
 
 
