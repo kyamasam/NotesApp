@@ -4,7 +4,9 @@ Screenshots
 You can access the app at
 [Link](https://notes.fastduka.co.ke)
 
-![Home](<[scr/screenshots/image.png](https://raw.githubusercontent.com/kyamasam/NotesApp/refs/heads/main/src/screenshots/image.png)>)
+![Home](https://raw.githubusercontent.com/kyamasam/NotesApp/refs/heads/main/src/screenshots/image.png)
+![Screenshot](https://github.com/kyamasa,/NotesApp/blob/main/image.png?raw=true)
+
 
 # Option 1: Run With Docker
 
